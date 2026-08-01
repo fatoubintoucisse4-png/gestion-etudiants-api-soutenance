@@ -11,8 +11,8 @@ test:
   stage: test
   image: php:8.2-cli
   before_script:
-    - apt-get update -qq && apt-get install -y -qq unzip git libzip-dev zip > /dev/null
-    - docker-php-ext-install pdo pdo_mysql zip > /dev/null
+    - apt-get update -qq && apt-get install -y -qq unzip git libzip-dev zip libsqlite3-dev > /dev/null
+    - docker-php-ext-install pdo pdo_mysql pdo_sqlite zip > /dev/null
     - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
     - composer install --no-progress --prefer-dist
   script:
