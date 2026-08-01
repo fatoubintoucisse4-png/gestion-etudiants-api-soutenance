@@ -1,0 +1,47 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  IMAGE_LATEST: $CI_REGISTRY_IMAGE:latest
+
+test:
+  stage: test
+  image: php:8.2-cli
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq unzip git libzip-dev zip > /dev/null
+    - docker-php-ext-install pdo pdo_mysql zip > /dev/null
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - composer install --no-progress --prefer-dist
+  script:
+    - cp .env.example .env
+    - php artisan key:generate
+    - php artisan test
+  only:
+    - main
+    - merge_requests
+
+build:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - docker build -t "$IMAGE_TAG" -t "$IMAGE_LATEST" .
+    - docker push "$IMAGE_TAG"
+    - docker push "$IMAGE_LATEST"
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  script:
+    - kubectl set image deployment/web-k8s nginx="$IMAGE_TAG" --kubeconfig="$KUBE_CONFIG" || echo "Déploiement Kubernetes à configurer"
+  only:
+    - main
+  when: manual
