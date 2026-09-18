@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: laravel-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: laravel-app
+  template:
+    metadata:
+      labels:
+        app: laravel-app
+    spec:
+      containers:
+        - name: laravel-app
+          image: host.minikube.internal:5000/gestion-etudiants-api:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: DB_HOST
+              value: mysql
+            - name: DB_DATABASE
+              value: gestion_etudiants
+            - name: DB_PASSWORD
+              value: rootsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: laravel-app
+spec:
+  type: NodePort
+  selector:
+    app: laravel-app
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
