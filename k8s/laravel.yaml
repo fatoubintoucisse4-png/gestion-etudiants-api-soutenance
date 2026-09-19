@@ -18,10 +18,16 @@ spec:
           ports:
             - containerPort: 80
           env:
+            - name: DB_CONNECTION
+              value: mysql
             - name: DB_HOST
               value: mysql
+            - name: DB_PORT
+              value: "3306"
             - name: DB_DATABASE
               value: gestion_etudiants
+            - name: DB_USERNAME
+              value: root
             - name: DB_PASSWORD
               value: rootsecret
 ---
