@@ -12,6 +12,32 @@ spec:
       labels:
         app: laravel-app
     spec:
+      initContainers:
+        - name: wait-for-mysql
+          image: host.minikube.internal:5000/gestion-etudiants-api:latest
+          command: ["sh", "-c"]
+          args:
+            - |
+              until nc -z mysql 3306; do
+                echo "En attente de MySQL...";
+                sleep 3;
+              done
+        - name: run-migrations
+          image: host.minikube.internal:5000/gestion-etudiants-api:latest
+          command: ["php", "artisan", "migrate", "--force"]
+          env:
+            - name: DB_CONNECTION
+              value: mysql
+            - name: DB_HOST
+              value: mysql
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_DATABASE
+              value: gestion_etudiants
+            - name: DB_USERNAME
+              value: root
+            - name: DB_PASSWORD
+              value: rootsecret
       containers:
         - name: laravel-app
           image: host.minikube.internal:5000/gestion-etudiants-api:latest
