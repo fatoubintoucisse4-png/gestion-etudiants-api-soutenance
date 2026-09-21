@@ -18,7 +18,7 @@ spec:
           command: ["sh", "-c"]
           args:
             - |
-              until nc -z mysql 3306; do
+              until php -r 'exit(@fsockopen("mysql", 3306) ? 0 : 1);'; do
                 echo "En attente de MySQL...";
                 sleep 3;
               done
